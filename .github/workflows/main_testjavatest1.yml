@@ -35,9 +35,7 @@ jobs:
     permissions:
         id-token: write  # Required to fetch an OIDC token to authenticate with the job
         contents: read # Required for actions/checkout
-    defaults:
-       shell: bash
-       working-directory: ${{ env.POM_XML_DIRECTORY }}
+       
     steps:
     - name: 'Checkout repository'
       uses: actions/checkout@v4
