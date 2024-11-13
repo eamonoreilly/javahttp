@@ -47,8 +47,8 @@ jobs:
       with:
         java-version: ${{ env.JAVA_VERSION }}
 
-    - name: `Build project with Maven`
-        run: mvn clean package
+    - name: 'Build project with Maven'
+    run: mvn clean package
 
   deploy:
     runs-on: ubuntu-latest
