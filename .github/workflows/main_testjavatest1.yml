@@ -1,12 +1,27 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
-# More GitHub Actions for Azure: https://github.com/Azure/actions
+name: Build and deploy Java project to Azure Function App
 
-name: Build and deploy Java project to Azure Function App - testjavatest1
+# CONFIGURATION
+#
+# For an overview of using GitHub workflows with Azure Functions, see https://learn.microsoft.com/azure/azure-functions/functions-how-to-github-actions
+#
+# 1. Configure a federated identity credential to your GitHub branch on an Azure user-assigned managed identity.
+#   For instructions, follow the README at https://github.com/Azure/functions-action
+#
+# 2. Add the following values from the managed identity to your repo's secrets:
+#   AZURE_CLIENT_ID
+#   AZURE_TENANT_ID
+#   AZURE_SUBSCRIPTION_ID
+#   For instructions on creating repo secrets, see https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository
+#
+# 3. Ensure your workflow is triggered by your desired event. By default, it is triggered when a push is made to main.
+#   For guidance on event triggers, see https://docs.github.com/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#using-events-to-trigger-workflows
+#
+# 4. Change the variables in the `env` section according to your project:
+#   For the latest list of supported runtimes, see https://learn.microsoft.com/azure/azure-functions/supported-languages
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 env:
@@ -15,38 +30,45 @@ env:
   JAVA_VERSION: '17' # set this to the java version to use
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write #This is required for requesting the JWT
-
+        id-token: write  # Required to fetch an OIDC token to authenticate with the job
+        contents: read # Required for actions/checkout
+    defaults:
+       shell: bash
+       working-directory: ${{ env.POM_XML_DIRECTORY }}
     steps:
-      - name: 'Checkout GitHub Action'
-        uses: actions/checkout@v4
+    - name: 'Checkout repository'
+      uses: actions/checkout@v4
 
-      - name: Setup Java Sdk ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v1
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
+    - name: 'Set up Java version: ${{ env.JAVA_VERSION }}'
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
 
-      - name: 'Restore Project Dependencies Using Mvn'
-        shell: pwsh
-        run:
-          mvn clean package
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
+    - name: `Build project with Maven`
+        run: mvn clean package
+
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required to fetch an OIDC token to authenticate with the job
+    
+     - name: 'Log in to Azure with AZ CLI'
+      uses: azure/login@v1
+      with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C159342F95B8494387F69E35D299337D }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F108682F772E459C90DBABD26A409C4B }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_87F1E52C4DD044248D555340EBAEB73E }}
+        
+    - name: 'Run the Azure Functions action'
+      uses: Azure/functions-action@v1
+      id: deploy-to-function-app
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        package: '${{ env.AZURE_FUNCTIONAPP_PROJECT_PATH }}'
+        respect-pom-xml: true
+        # remote-build: true # set to `true` if you remove the "build" job
 
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-action@v1
-        id: fa
-        with:
-          app-name: 'testjavatest1'
-          slot-name: 'Production'
-          package: '${{ env.PACKAGE_DIRECTORY }}'
-          respect-pom-xml: true
-          
+# For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
