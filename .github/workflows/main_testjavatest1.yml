@@ -30,7 +30,7 @@ env:
   JAVA_VERSION: '17' # set this to the java version to use
 
 jobs:
-  build:
+  build_deploy:
     runs-on: ubuntu-latest
     permissions:
         id-token: write  # Required to fetch an OIDC token to authenticate with the job
@@ -63,6 +63,6 @@ jobs:
        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
        package: ${{ env.PACKAGE_DIRECTORY }}
        respect-pom-xml: true
-        # remote-build: true # set to `true` if you remove the "build" job
+     # remote-build: true # set to `true` if you remove the "build" job
 
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
