@@ -26,7 +26,7 @@ on:
 
 env:
   AZURE_FUNCTIONAPP_NAME: testjavatest1 # set this to your function app name on Azure
-  PACKAGE_DIRECTORY: '.' # set this to the directory which contains pom.xml file
+  PACKAGE_DIRECTORY: '/home/runner/work/javahttp' # set this to the directory which contains pom.xml file
   JAVA_VERSION: '17' # set this to the java version to use
 
 jobs:
@@ -61,7 +61,7 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C159342F95B8494387F69E35D299337D }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F108682F772E459C90DBABD26A409C4B }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_87F1E52C4DD044248D555340EBAEB73E }}
-        
+  
      - name: 'Run the Azure Functions action'
        uses: Azure/functions-action@v1
        id: deploy-to-function-app
