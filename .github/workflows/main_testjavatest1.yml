@@ -49,6 +49,12 @@ jobs:
     - name: 'Build project with Maven'
       run: mvn clean package
 
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v4
+      with:
+        name: java-app
+        path: .
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -56,20 +62,25 @@ jobs:
       id-token: write  # Required to fetch an OIDC token to authenticate with the job
 
     steps:
-     - name: 'Log in to Azure with AZ CLI'
-       uses: azure/login@v1
-       with:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: java-app
+          
+      - name: 'Log in to Azure with AZ CLI'
+        uses: azure/login@v1
+        with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C159342F95B8494387F69E35D299337D }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F108682F772E459C90DBABD26A409C4B }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_87F1E52C4DD044248D555340EBAEB73E }}
   
-     - name: 'Run the Azure Functions action'
-       uses: Azure/functions-action@v1
-       id: deploy-to-function-app
-       with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: ${{ env.PACKAGE_DIRECTORY }}
-        respect-pom-xml: true
+      - name: 'Run the Azure Functions action'
+        uses: Azure/functions-action@v1
+        id: deploy-to-function-app
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: ${{ env.PACKAGE_DIRECTORY }}
+          respect-pom-xml: true
         # remote-build: true # set to `true` if you remove the "build" job
 
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
